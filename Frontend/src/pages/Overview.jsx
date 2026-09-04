@@ -47,6 +47,13 @@ export default function Overview() {
 
   useEffect(() => {
     loadData();
+    // Real-time auto-refresh polling every 4 seconds
+    const interval = setInterval(() => {
+      fetchDashboardMetrics()
+        .then(setMetrics)
+        .catch(() => {});
+    }, 4000);
+    return () => clearInterval(interval);
   }, []);
 
   const triggerDemoScenario = async (scenarioNum) => {
