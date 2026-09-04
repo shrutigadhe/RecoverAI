@@ -1,6 +1,11 @@
 import axios from 'axios';
 
-const API_BASE = '/api';
+// Connect to live Render backend URL in production, or /api proxy in local development
+const API_BASE = import.meta.env.VITE_API_BASE_URL
+  ? `${import.meta.env.VITE_API_BASE_URL}/api`
+  : (typeof window !== 'undefined' && window.location.hostname.includes('vercel.app'))
+  ? 'https://recoverai-backend-ej3i.onrender.com/api'
+  : '/api';
 
 const api = axios.create({
   baseURL: API_BASE,
