@@ -1,28 +1,36 @@
-# RecoverAI — AI Revenue Recovery Agent
+# RecoverAI — Autonomous AI Revenue Recovery Agent
 
-> **Autonomous, Policy-Bounded AI Revenue Recovery Agent for Agentic Commerce**
+> **Razorpay Buildathon — Track 03: AI Revenue Recovery**  
+> *Find revenue that’s slipping away and win it back with a policy-bounded AI recovery agent.*
 
-[![Backend Tests](https://img.shields.io/badge/pytest-18%20passed-emerald)](./backend/tests)
-[![Python](https://img.shields.io/badge/python-3.11%2B-blue)](https://python.org)
-[![FastAPI](https://img.shields.io/badge/FastAPI-0.110-009688)](https://fastapi.tiangolo.com)
-[![React](https://img.shields.io/badge/React-18-blue)](https://react.dev)
-[![TailwindCSS](https://img.shields.io/badge/TailwindCSS-3.4-38bdf8)](https://tailwindcss.com)
+[![Live Web Dashboard](https://img.shields.io/badge/Live%20Dashboard-Vercel-6366f1?style=for-the-badge&logo=vercel)](https://recover-ai-snowy.vercel.app)
+[![Live Backend API](https://img.shields.io/badge/Live%20API-Render-009688?style=for-the-badge&logo=render)](https://recoverai-backend-ej3i.onrender.com/docs)
+[![Backend Tests](https://img.shields.io/badge/Pytest-25%20Passed%20(100%25)-emerald?style=for-the-badge&logo=pytest)](./backend/tests)
+[![Security](https://img.shields.io/badge/Security-Argon2id%20%2B%20PyJWT-blue?style=for-the-badge&logo=jsonwebtokens)](./backend/app/utils/security.py)
+
+---
+
+## 🌐 Live Cloud Deployment Links
+
+- 🖥️ **Live Web Dashboard (UI)**: [https://recover-ai-snowy.vercel.app](https://recover-ai-snowy.vercel.app)
+- ⚙️ **Live Cloud Backend API**: [https://recoverai-backend-ej3i.onrender.com](https://recoverai-backend-ej3i.onrender.com)
+- 📖 **Interactive Swagger Docs**: [https://recoverai-backend-ej3i.onrender.com/docs](https://recoverai-backend-ej3i.onrender.com/docs)
 
 ---
 
 ## 1. Problem Statement
 
-Businesses lose up to **15-30% of potential revenue** due to failed payments, checkout abandonment, temporary banking disruptions, and expired cards. Standard retry mechanisms fail because they treat every failure identically—either retrying blindly (risking customer frustration or duplicate charges) or failing silently.
+Businesses lose **15% to 30% of potential revenue** to failed payments, checkout drop-offs, network timeouts, and expired cards. Naive automated retries are dangerous—they risk duplicate charges, customer frustration, spammed notifications, and compliance violations.
 
 ---
 
 ## 2. Solution: RecoverAI
 
-**RecoverAI** is an intelligent revenue recovery agent built on **LangGraph** and a **Deterministic Policy Engine**. It intercepts payment failures, diagnoses root causes, recommends bounded recovery actions, validates every financial decision against merchant guardrails, and executes safe recoveries with an immutable audit trail.
+**RecoverAI** is an autonomous revenue recovery agent built with **LangGraph** and a **Deterministic Policy Engine**. It detects failed payments, diagnoses root causes using AI, recommends bounded interventions, validates every decision against strict merchant guardrails, and executes safe recoveries with an immutable audit trail.
 
 ---
 
-## 3. Core Architecture
+## 3. Core Closed-Loop System Architecture
 
 ```
 +-----------------------------------------------------------------------------------+
@@ -43,10 +51,12 @@ Businesses lose up to **15-30% of potential revenue** due to failed payments, ch
                      ▼
       [ LangGraph AI Agent Diagnosis & Recommendation ]
         - Structured JSON Output:
-          * Diagnosis (Root cause)
-          * Recovery Score (0.0 to 1.0)
-          * Recommended Action (RETRY, REMINDER, ESCALATE, STOP)
-          * Confidence Level (0.0 to 1.0)
+          * diagnosis (Root cause)
+          * recovery_score (0.0 to 1.0)
+          * recommended_action (RETRY, REMINDER, ESCALATE, STOP)
+          * confidence (0.0 to 1.0)
+          * reason
+        - Fallback: On LLM timeout / malformed output -> ESCALATE + AI_ERROR audit log
                      │
                      ▼
       [ Deterministic Policy / Guardrail Engine ]
@@ -62,97 +72,96 @@ Businesses lose up to **15-30% of potential revenue** due to failed payments, ch
         │                         │
         ▼                         ▼
  [Execute Bounded Action]   [Escalate Case to Merchant]
-  - RETRY payment             - Store Escalation Reason
-  - REMINDER message          - Human-in-the-Loop Override
+  - RETRY payment             - Store Policy Rejection Reason
+  - REMINDER link             - Human-in-the-Loop Override
         │                         │
         +------------+------------+
                      │
                      ▼
-        [ Verify Payment Outcome ]
+        [ Payment Status Verification ]
                      │
                      ▼
          [ Immutable Audit Log Entry ]
                      │
                      ▼
-      [ Dashboard & Analytics Metrics Update ]
+      [ Real-Time 4s Auto-Refresh Dashboard Metrics ]
 ```
 
 ---
 
-## 4. Key Features
+## 4. Key Features & Guardrails
 
-- ⚡ **Failed Payment Interception**: Idempotent Razorpay webhook listener for `payment.failed`, `payment.authorized`, and `payment.captured`.
-- 🧠 **LangGraph AI Diagnosis**: Diagnoses failure root causes and predicts explainable recovery scores.
-- 🛡️ **Bounded Policy Guardrails**: Enforces non-negotiable financial limits (`MAX_AUTO_RETRY=1`, `MAX_AUTO_RECOVERY_AMOUNT=₹5,000`, `MIN_AI_CONFIDENCE=80%`).
-- 🔒 **Duplicate Charge Prevention**: Verifies real-time payment status before any retry action.
-- 👤 **Human-in-the-Loop Escalation**: Provides merchant manual override and approval for escalated high-value or low-confidence payments.
-- 📜 **Immutable Audit Trail**: Logs every event, policy evaluation, action, and outcome with timestamped metadata.
-- 📊 **Real-time Analytics Dashboard**: Modern SaaS React frontend with Recharts visualization.
-- 🧪 **Batch Evaluation**: Benchmarks recovery algorithms over a 100-case synthetic payment dataset.
+- ⚡ **Failed Payment Interception**: Idempotent Razorpay webhook listener for `payment.failed`, `payment.authorized`, and `payment.captured` with HMAC SHA256 signature verification.
+- 🧠 **LangGraph AI Agent**: Structured JSON output returning diagnosis, recovery score, recommended action, and confidence.
+- 🛡️ **Non-Negotiable Policy Guardrails**:
+  - `MAX_AUTO_RETRY = 1` (Prevents infinite retries or notification spamming)
+  - `MAX_AUTO_RECOVERY_AMOUNT = ₹5,000` (High-value payments require merchant approval)
+  - `MIN_AI_CONFIDENCE = 80%` (Low AI confidence escalates to merchant support)
+  - `DUPLICATE_PAYMENT_PROTECTION` (Halts action if payment is already captured)
+- 🔒 **Argon2id Password Security**: Password hashing using `argon2-cffi` + `PyJWT` Bearer authentication.
+- 🏢 **Merchant-Level Data Isolation**: All data queries derive merchant identity from JWT tokens (cross-merchant access forbidden).
+- 👤 **Human-in-the-Loop Overrides**: Merchant dashboard buttons for manual retry approval or escalation.
+- 📜 **Immutable Audit Log**: Every event, policy check, actor, and outcome is logged with timestamps.
+- 📊 **Real-Time Auto-Refresh Dashboard**: React SaaS UI with Recharts visualizations auto-refreshing every 4 seconds.
+- 🧪 **Batch Evaluation Benchmark**: Evaluates 100 synthetic payment failure records (`data/synthetic_payments.csv`) to show measured revenue recovered across a batch.
 
 ---
 
-## 5. Tech Stack
+## 5. The 5 Live Demo Scenarios
+
+| Scenario | Input Case | AI Recommendation | Policy Check | Final Status | Outcome |
+|---|---|---|---|---|---|
+| **1. Successful Recovery** | ₹3,500 Bank Error (0 retries) | `RETRY` (89% conf) | **APPROVED** | **RECOVERED** | +₹3,500 Recovered |
+| **2. Retry Blocked** | ₹2,000 Failure (retry_count=1) | `RETRY` | **REJECTED** (Max Retry) | **ESCALATED** | Sent to Merchant UI |
+| **3. Low Confidence** | ₹3,200 Unknown Error Code 99 | `ESCALATE` (61% conf) | **REJECTED** (Low Conf) | **ESCALATED** | Sent to Merchant UI |
+| **4. High Value Payment** | ₹25,000 Failure (> ₹5,000) | `RETRY` | **REJECTED** (Max Amount) | **ESCALATED** | Sent to Merchant UI |
+| **5. Already Captured** | Webhook for completed payment | `STOP` | **STOPPED** | **STOPPED** | +₹0 Duplicate Charge |
+
+---
+
+## 6. Tech Stack
 
 - **Frontend**: React, Vite, Tailwind CSS, Recharts, Axios, React Router, Lucide Icons.
-- **Backend**: Python, FastAPI, Pydantic v2, SQLAlchemy 2.0, PostgreSQL (with SQLite dev fallback).
-- **AI Engine**: LangGraph, LangChain, Google Gemini / OpenAI (with fallback scoring engine).
-- **Payments**: Razorpay Test Mode API & Webhook integration.
+- **Backend**: Python 3.11+, FastAPI, Pydantic v2, SQLAlchemy 2.0, PostgreSQL (with SQLite dev fallback).
+- **Security**: Argon2id (`argon2-cffi`), PyJWT, Passlib.
+- **AI Agent**: LangGraph, LangChain, Google Gemini / OpenAI (with fallback scoring engine).
+- **Payments**: Razorpay Test Mode API & Webhook handler.
 
 ---
 
-## 6. Quick Start & Setup
+## 7. Quick Start & Local Setup
 
 ### Prerequisites
 - Python 3.11+
 - Node.js v18+ & npm
-- PostgreSQL (Optional; falls back to local SQLite if PostgreSQL is not running)
 
-### Step 1: Clone & Setup Backend
+### Step 1: Clone Repository
+```bash
+git clone https://github.com/shrutigadhe/RecoverAI.git
+cd RecoverAI
+```
+
+### Step 2: Backend Setup
 ```bash
 cd backend
 pip install -r requirements.txt
-cp .env.example .env
+python -m uvicorn app.main:app --reload --port 8000
 ```
+*Backend API Docs will be live at:* `http://localhost:8000/docs`
 
-Run Backend Server:
+### Step 3: Frontend Setup (Open a New Terminal)
 ```bash
-uvicorn app.main:app --reload --port 8000
-```
-Backend API interactive docs will be available at: `http://localhost:8000/docs`
-
-### Step 2: Setup Frontend
-```bash
-cd ../frontend
+cd frontend
 npm install
 npm run dev
 ```
-Dashboard will be available at: `http://localhost:3000`
+*Frontend Dashboard will be live at:* `http://localhost:3000`
 
 ---
 
-## 7. Environment Variables Configuration
+## 8. Running Automated Test Suite
 
-Refer to `backend/.env.example`:
-
-```ini
-DATABASE_URL=postgresql://postgres:postgres@localhost:5432/recoverai
-DEMO_MODE=true
-RAZORPAY_KEY_ID=rzp_test_your_key_id
-RAZORPAY_KEY_SECRET=your_key_secret
-RAZORPAY_WEBHOOK_SECRET=your_webhook_secret
-LLM_PROVIDER=gemini
-LLM_API_KEY=your_gemini_api_key
-MAX_AUTO_RETRY=1
-MAX_AUTO_RECOVERY_AMOUNT=5000.0
-MIN_AI_CONFIDENCE=0.80
-```
-
----
-
-## 8. Running Automated Tests
-
-Run backend pytest suite (18 unit tests):
+Run the backend pytest suite (**25 / 25 tests passing 100%**):
 ```bash
 cd backend
 python -m pytest tests/ -v
@@ -160,8 +169,15 @@ python -m pytest tests/ -v
 
 ---
 
-## 9. Batch Evaluation Results
+## 9. Docker Deployment
 
-Run batch evaluation over `data/synthetic_payments.csv` (100 synthetic payment failure records):
+Deploy all services (PostgreSQL, Backend, Frontend) with Docker Compose:
+```bash
+docker compose up -d --build
+```
 
-Endpoint: `POST /api/evaluation/run` or via UI at `http://localhost:3000/evaluation`.
+---
+
+## 10. License
+
+Built for the **Razorpay Buildathon 2026** under the **AI Revenue Recovery** track.
