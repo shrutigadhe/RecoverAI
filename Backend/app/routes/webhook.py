@@ -14,6 +14,19 @@ logger = logging.getLogger("recoverai.webhook")
 router = APIRouter(prefix="/webhook", tags=["Webhook"])
 
 
+@router.get("/razorpay")
+async def razorpay_webhook_info():
+    """
+    Informational GET endpoint for browser navigation.
+    """
+    return {
+        "status": "active",
+        "endpoint": "/api/webhook/razorpay",
+        "method_required": "POST",
+        "message": "Razorpay Webhook Endpoint is active. Razorpay will send HTTP POST requests with payment event payloads to this URL."
+    }
+
+
 @router.post("/razorpay")
 async def razorpay_webhook(
     request: Request,

@@ -29,3 +29,12 @@ def test_razorpay_failed_payment_webhook(client):
     data = response.json()
     assert data["status"] == "success"
     assert "recovery_case_id" in data
+
+
+def test_razorpay_webhook_get_info(client):
+    response = client.get("/api/webhook/razorpay")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "active"
+    assert "POST" in data["message"]
+
